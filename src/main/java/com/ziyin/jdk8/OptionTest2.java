@@ -8,6 +8,7 @@ import java.util.Optional;
 /**
  * @author ziyin
  @create 2019-01-2019/1/20-21:18
+ Optional 没有实现序列化接口不要定义为实例变量和方法参数
  */
 public class OptionTest2 {
 	public static void main(String[] args) {
