@@ -7,15 +7,31 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-/**
+/** *     A a1 = supplier.get();
+ *     accumulator.accept(a1, t1);
+ *     accumulator.accept(a1, t2);
+ *     R r1 = finisher.apply(a1);  // result without splitting
+ *
+ *     A a2 = supplier.get();
+ *     accumulator.accept(a2, t1);
+ *     A a3 = supplier.get();
+ *     accumulator.accept(a3, t2);
+ *     R r2 = finisher.apply(combiner.apply(a2, a3));  // result with splitting
  * @author ziyin
  @create 2019-02-2019/2/1-7:07
  */
 public class MySetCollector2<T> implements Collector<T,Set<T>,Map<T,T>> {
+	/**
+	 * 提供中间结果容器
+	 * @return
+	 */
 	@Override
 	public Supplier<Set<T>> supplier() {
 		System.out.println("supplier invoked");
-		return HashSet<T>::new;
+		return () -> {
+			System.out.println("-------------");
+			return new HashSet<>();
+		};
 	}
 
 	/**
@@ -66,11 +82,18 @@ public class MySetCollector2<T> implements Collector<T,Set<T>,Map<T,T>> {
 	}
 
 	public static void main(String[] args) {
+		System.out.println(Runtime.getRuntime().availableProcessors());
 		List<String> list = Arrays.asList("hello","world","welcome","hello","a","b","c","d","e","f","g");
 		Set<String> set = new HashSet<>();
 		set.addAll(list);
 		System.out.println("set: " + set);
+		//最多生成与cpu核心数相同的线程, 利用硬件英特尔的超线程技术, 将一个cpu核心模拟成两个核心,
 		Map<String,String> map = set.parallelStream().collect(new MySetCollector2<>());
+//		Map<String,String> map = set.stream().parallel().collect(new MySetCollector2<>());
+//		Map<String,String> map = set.stream().sequential().collect(new MySetCollector2<>());
+		//多个调用只有最后一个有效
+		//Map<String,String> map = set.stream().parallel().sequential().parallel().collect(new MySetCollector2<>());
+
 		System.out.println(map	);
 	}
 }
